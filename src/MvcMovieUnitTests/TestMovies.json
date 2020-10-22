@@ -1,0 +1,27 @@
+[
+    {
+        "year": 2013,
+        "title": "This Is the End",
+        "info": {
+            "directors": [
+                "Evan Goldberg",
+                "Seth Rogen"
+            ],
+            "release_date": "2013-06-03T00:00:00Z",
+            "rating": "7.2m",
+            "genres": [
+                "Comedy",
+                "Fantasy"
+            ],
+            "image_url": "https://ia.media-imdb.com/images/M/MV5BMTQxODE3NjM1Ml5BMl5BanBnXkFtZTcwMzkzNjc4OA@@._V1_SX400_.jpg",
+            "plot": "While attending a party at James Franco's house, Seth Rogen, Jay Baruchel and many other celebrities are faced with the apocalypse.",
+            "rank": "6",
+            "running_time_secs": "6420",
+            "actors": [
+                "James Franco",
+                "Jonah Hill",
+                "Seth Rogen"
+            ]
+        }
+    }
+]
