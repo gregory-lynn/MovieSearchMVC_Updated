@@ -5,6 +5,10 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="moviedata.json" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Abp.ZeroCore.EntityFrameworkCore" Version="5.14.0" />

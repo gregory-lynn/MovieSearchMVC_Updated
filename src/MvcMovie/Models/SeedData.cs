@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using MvcMovie.Controllers;
 using MvcMovie.Models.Entities;
 using NuGet.Frameworks;
 using System;
@@ -45,6 +46,33 @@ namespace MvcMovie.Models
                         });
 
                 }
+
+               
+
+                if (!context.Movies.Any())
+                {
+                    var controller = new MvcMoviesController(context);
+                    var JsonMovieList = controller.GetMvcMoviesFromJson();
+
+                    foreach (Models.Entities.Movies m in JsonMovieList)
+                    {
+                        context.Movies.AddRange(m);
+                        context.SaveChanges();
+                        var movieId = (from mov in context.Movies where mov.Title.Equals(m.Title) select mov.Id).FirstOrDefault();
+                        var info = m.Info;
+                        info.MovieId = m.Info.MovieId;
+                        context.SaveChanges();
+                        var infoId = (from mov in context.Movies where mov.Id.Equals(info.MovieId) select mov.Info.Id).FirstOrDefault();
+                        var actors = m.Info.Actors;
+                        var directors = m.Info.Directors;
+                        var genres = m.Info.Genres;
+                        foreach (Actors a in actors) { a.InfoId = infoId; }
+                        foreach (Directors d in directors) { d.InfoId = infoId; }
+                        foreach (Genres g in genres) { g.InfoId = infoId; }
+                        context.SaveChanges();
+                    }
+                }
+
 
                 // don't seed the new movie models if exist
                 if (!context.Movies.Any())

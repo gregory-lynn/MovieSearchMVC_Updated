@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using MvcMovie.Migrations;
 using MvcMovie.Models;
+using Newtonsoft.Json;
 
 namespace MvcMovie.Controllers
 {
@@ -165,6 +170,28 @@ namespace MvcMovie.Controllers
         private bool MovieExists(int id)
         {
             return _context.Movies.Any(e => e.Id == id);
+        }
+
+        public List<Models.Entities.Movies> GetMvcMoviesFromJson()
+        {
+            try
+            {
+                using StreamReader file = (StreamReader)GetInputFile("moviedata.json");
+                JsonSerializer serializer = new JsonSerializer();
+                return (List<MvcMovie.Models.Entities.Movies>)serializer
+                    .Deserialize(file, typeof(List<MvcMovie.Models.Entities.Movies>));
+            }
+            catch (Exception e)
+            {
+                var test = e.Message;
+                return null;
+            }
+        }
+        public static TextReader GetInputFile(string filename)
+        {
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+            string path = "MvcMovieUnitTests";
+            return new StreamReader(thisAssembly.GetManifestResourceStream(path + "." + filename));
         }
     }
 }
