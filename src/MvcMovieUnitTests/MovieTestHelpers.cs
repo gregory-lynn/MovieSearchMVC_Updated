@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MvcMovie;
 using MvcMovie.Controllers;
+using MvcMovie.Migrations;
 using MvcMovie.Models;
 using Newtonsoft.Json;
 using Xunit;
@@ -45,8 +46,9 @@ namespace MvcMovieUnitTests
         public Helpers()
         {
             Startup();
-            GetAllMovies();
             GetTestMoviesFromJson();
+            GetAllMovies();
+            //GetTestMoviesFromJson();
             //DeleteAllTestMovies();
         }
         #endregion
@@ -107,13 +109,75 @@ namespace MvcMovieUnitTests
                 .Include(x => x.Info.Genres).Include(x => x.Info.Actors).ToList();
         }
 
+        public void GetTestMovies(List<dynamic> JsonMovieList)
+        {
+            foreach (dynamic m in JsonMovieList)
+            {
+                // var _movie = new TempSeedMovieModel();
+                var _movie = new MvcMovie.Models.Entities.Movies();
+
+                _movie.Year = m.year;
+                _movie.Title = m.title;
+                _movie.Info = new MvcMovie.Models.Entities.Info();
+                _movie.Info.Directors = new List<MvcMovie.Models.Entities.Directors>();
+                try
+                {
+                    foreach (string director in m.info.directors)
+                    {
+                        var _director = new MvcMovie.Models.Entities.Directors();
+                        _director.Director = director;
+                        _movie.Info.Directors.Add(_director);
+                    }
+                }
+                catch { }
+                try
+                {
+                    _movie.Info.ReleaseDate = m.info.release_date;
+                }
+                catch
+                {
+                    _movie.Info.ReleaseDate = DateTime.MinValue;
+                }
+
+                _movie.Info.Rating = Convert.ToDecimal(m.info.rating);
+
+                _movie.Info.Genres = new List<MvcMovie.Models.Entities.Genres>();
+                try
+                {
+                    foreach (string genre in m.info.genres)
+                    {
+                        var _genre = new MvcMovie.Models.Entities.Genres();
+                        _genre.Genre = genre;
+                        _movie.Info.Genres.Add(_genre);
+                    }
+                }
+                catch { }
+                _movie.Info.ImageUrl = m.info.image_url;
+                _movie.Info.Plot = m.info.plot;
+                _movie.Info.Rank = Convert.ToString(m.info.rank);
+                _movie.Info.RunningTime = m.info.running_time_secs;
+                _movie.Info.Actors = new List<MvcMovie.Models.Entities.Actors>();
+                try
+                {
+                    foreach (string actor in m.info.actors)
+                    {
+                        var _actor = new MvcMovie.Models.Entities.Actors();
+                        _actor.Actor = actor;
+                        _movie.Info.Actors.Add(_actor);
+                    }
+                }
+                catch { }
+                TestMovies.Add(_movie);
+            }
+        }
         public void GetTestMoviesFromJson()
         {
             try
             {
                 using StreamReader file = (StreamReader)GetInputFile("TestMovies.json");
                 JsonSerializer serializer = new JsonSerializer();
-                TestMovies = (List<MvcMovie.Models.Entities.Movies>)serializer.Deserialize(file, typeof(List<MvcMovie.Models.Entities.Movies>));
+                var tmpMovies = (List<dynamic>)serializer.Deserialize(file, typeof(List<dynamic>));
+                GetTestMovies(tmpMovies);
             }
             catch (Exception e)
             {

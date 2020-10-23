@@ -7,10 +7,24 @@ using NuGet.Frameworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
+using System.Reflection;
+using Abp.Extensions;
 
 namespace MvcMovie.Models
 {
+    public class TempSeedMovieModel
+    {
+        private Entities.Movies _movie;
+        public Entities.Movies Movie 
+        { 
+            get { return _movie; }
+            set { _movie = value; }
+        }
+        public TempSeedMovieModel()
+        {
+            _movie = new Entities.Movies();
+        }
+    }
     public static class SeedData
     {
         public static void Initialize(IServiceProvider serviceProvider)
@@ -47,25 +61,80 @@ namespace MvcMovie.Models
 
                 }
 
-               
 
+                // don't seed the Json movie models if exist
                 if (!context.Movies.Any())
                 {
                     var controller = new MvcMoviesController(context);
                     var JsonMovieList = controller.GetMvcMoviesFromJson();
 
-                    foreach (Models.Entities.Movies m in JsonMovieList)
+                    foreach (dynamic m in JsonMovieList)
                     {
-                        context.Movies.AddRange(m);
+                        // var _movie = new TempSeedMovieModel();
+                        var _movie = new Movies();
+
+                        _movie.Year = m.year;
+                        _movie.Title = m.title;
+                        _movie.Info = new Info();
+                        _movie.Info.Directors = new List<Directors>();
+                        try
+                        {
+                            foreach (string director in m.info.directors)
+                            {
+                                var _director = new Directors();
+                                _director.Director = director;
+                                _movie.Info.Directors.Add(_director);
+                            }
+                        }
+                        catch { }
+                        try
+                        {
+                            _movie.Info.ReleaseDate = m.info.release_date;
+                        }
+                        catch
+                        {
+                            _movie.Info.ReleaseDate = DateTime.MinValue;
+                        }
+                        
+                        _movie.Info.Rating = Convert.ToDecimal(m.info.rating);
+                        
+                        _movie.Info.Genres = new List<Genres>();
+                        try
+                        {
+                            foreach (string genre in m.info.genres)
+                            {
+                                var _genre = new Genres();
+                                _genre.Genre = genre;
+                                _movie.Info.Genres.Add(_genre);
+                            }
+                        }
+                        catch { }
+                        _movie.Info.ImageUrl = m.info.image_url;
+                        _movie.Info.Plot = m.info.plot;
+                        _movie.Info.Rank = Convert.ToString(m.info.rank);
+                        _movie.Info.RunningTime = m.info.running_time_secs;
+                        _movie.Info.Actors = new List<Actors>();
+                        try
+                        {
+                            foreach (string actor in m.info.actors)
+                            {
+                                var _actor = new Actors();
+                                _actor.Actor = actor;
+                                _movie.Info.Actors.Add(_actor);
+                            }
+                        }
+                        catch { }
+                        context.Movies.Add(_movie);
                         context.SaveChanges();
-                        var movieId = (from mov in context.Movies where mov.Title.Equals(m.Title) select mov.Id).FirstOrDefault();
-                        var info = m.Info;
-                        info.MovieId = m.Info.MovieId;
+
+                        var movieId = (from mov in context.Movies where mov.Title.Equals(_movie.Title) select mov.Id).FirstOrDefault();
+                        var info = _movie.Info;
+                        info.MovieId = _movie.Id;
                         context.SaveChanges();
                         var infoId = (from mov in context.Movies where mov.Id.Equals(info.MovieId) select mov.Info.Id).FirstOrDefault();
-                        var actors = m.Info.Actors;
-                        var directors = m.Info.Directors;
-                        var genres = m.Info.Genres;
+                        var actors = _movie.Info.Actors;
+                        var directors = _movie.Info.Directors;
+                        var genres = _movie.Info.Genres;
                         foreach (Actors a in actors) { a.InfoId = infoId; }
                         foreach (Directors d in directors) { d.InfoId = infoId; }
                         foreach (Genres g in genres) { g.InfoId = infoId; }

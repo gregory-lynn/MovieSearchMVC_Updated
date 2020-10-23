@@ -172,14 +172,14 @@ namespace MvcMovie.Controllers
             return _context.Movies.Any(e => e.Id == id);
         }
 
-        public List<Models.Entities.Movies> GetMvcMoviesFromJson()
+        public List<dynamic> GetMvcMoviesFromJson()
         {
             try
             {
                 using StreamReader file = (StreamReader)GetInputFile("moviedata.json");
                 JsonSerializer serializer = new JsonSerializer();
-                return (List<MvcMovie.Models.Entities.Movies>)serializer
-                    .Deserialize(file, typeof(List<MvcMovie.Models.Entities.Movies>));
+                return (List<dynamic>)serializer
+                    .Deserialize(file, typeof(List<dynamic>));
             }
             catch (Exception e)
             {
@@ -190,7 +190,7 @@ namespace MvcMovie.Controllers
         public static TextReader GetInputFile(string filename)
         {
             Assembly thisAssembly = Assembly.GetExecutingAssembly();
-            string path = "MvcMovieUnitTests";
+            string path = "MvcMovie";
             return new StreamReader(thisAssembly.GetManifestResourceStream(path + "." + filename));
         }
     }
