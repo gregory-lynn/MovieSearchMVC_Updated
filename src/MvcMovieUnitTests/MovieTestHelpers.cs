@@ -46,7 +46,7 @@ namespace MvcMovieUnitTests
         public Helpers()
         {
             Startup();
-            GetTestMoviesFromJson();
+            //GetTestMoviesFromJson();
             GetAllMovies();
             //GetTestMoviesFromJson();
             //DeleteAllTestMovies();
@@ -86,8 +86,8 @@ namespace MvcMovieUnitTests
             foreach (MvcMovie.Models.Entities.Movies m in AllMovies)
             {
                 _context.Movies.Remove(m);
-                _context.SaveChanges();
             }
+            _context.SaveChanges();
         }
         //public void DeleteAllTestMovies()
         //{
@@ -167,7 +167,7 @@ namespace MvcMovieUnitTests
                     }
                 }
                 catch { }
-                TestMovies.Add(_movie);
+               // TestMovies.Add(_movie);
             }
         }
         public void GetTestMoviesFromJson()

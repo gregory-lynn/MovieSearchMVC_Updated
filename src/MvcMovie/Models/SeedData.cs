@@ -25,9 +25,10 @@ namespace MvcMovie.Models
         public static void Initialize(IServiceProvider serviceProvider)
         {
             log4net.Config.XmlConfigurator.Configure();
-            using (var context = new MvcMovieContext(
+            var context = new MvcMovieContext(
                 serviceProvider.GetRequiredService<
-                    DbContextOptions<MvcMovieContext>>()))
+                    DbContextOptions<MvcMovieContext>>());
+
             {   // don't seed the original movie models if exist
                 if (!context.Movie.Any())
                 {
@@ -532,7 +533,7 @@ namespace MvcMovie.Models
 
         public static void SetContextIds(MvcMovieContext context)
         {
-            Task.Factory.StartNew(() => SetContextIds(context));
+            Task.Factory.StartNew(() => SetContextIdsAsync(context));
         }
         public static Task SetContextIdsAsync(MvcMovieContext context)
         {
@@ -540,20 +541,23 @@ namespace MvcMovie.Models
             timer.Start();
             foreach (Movies m in context.Movies)
             {
-
                 var movieId = (from mov in context.Movies where mov.Title.Equals(m.Title) select mov.Id).FirstOrDefault();
                 var info = m.Info;
                 info.MovieId = m.Id;
-                context.SaveChanges();
-                var infoId = (from mov in context.Movies where mov.Id.Equals(info.MovieId) select mov.Info.Id).FirstOrDefault();
-                var actors = m.Info.Actors;
-                var directors = m.Info.Directors;
-                var genres = m.Info.Genres;
+            }
+            context.SaveChanges();
+            foreach (Movies m2 in context.Movies)
+            { 
+                var info2 = m2.Info;
+                var infoId = (from mov in context.Movies where mov.Id.Equals(info2.MovieId) select mov.Info.Id).FirstOrDefault();
+                var actors = m2.Info.Actors;
+                var directors = m2.Info.Directors;
+                var genres = m2.Info.Genres;
                 foreach (Actors a in actors) { a.InfoId = infoId; }
                 foreach (Directors d in directors) { d.InfoId = infoId; }
                 foreach (Genres g in genres) { g.InfoId = infoId; }
-                context.SaveChanges();
             }
+            context.SaveChanges();
             timer.Stop();
             log.Info(string.Format("SetContextIdsAsync - completed adding Ids to Movies in separate thread and saving to DB:  {0} ms have elapsed.", timer.ElapsedMilliseconds.ToString()));
             return null;
