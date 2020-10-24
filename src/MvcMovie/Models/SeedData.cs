@@ -9,26 +9,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Abp.Extensions;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using log4net;
+using Abp.Threading.Extensions;
 
 namespace MvcMovie.Models
 {
-    public class TempSeedMovieModel
-    {
-        private Entities.Movies _movie;
-        public Entities.Movies Movie 
-        { 
-            get { return _movie; }
-            set { _movie = value; }
-        }
-        public TempSeedMovieModel()
-        {
-            _movie = new Entities.Movies();
-        }
-    }
     public static class SeedData
     {
+
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
+            (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public static void Initialize(IServiceProvider serviceProvider)
         {
+            log4net.Config.XmlConfigurator.Configure();
             using (var context = new MvcMovieContext(
                 serviceProvider.GetRequiredService<
                     DbContextOptions<MvcMovieContext>>()))
@@ -66,18 +62,23 @@ namespace MvcMovie.Models
                 if (!context.Movies.Any())
                 {
                     var controller = new MvcMoviesController(context);
+                    var timer = new Stopwatch();
+                    timer.Start();
                     var JsonMovieList = controller.GetMvcMoviesFromJson();
-
+                    timer.Stop();
+                    log.Info(string.Format("SeedData - GetMvcMoviesFromJson() converted {0} objects in {1} seconds", JsonMovieList.Count.ToString(), (timer.ElapsedMilliseconds / 1000).ToString()));
+                    var seededMoviesList = new List<Movies>();
+                    timer.Restart();
                     foreach (dynamic m in JsonMovieList)
                     {
-                        // var _movie = new TempSeedMovieModel();
+
                         var _movie = new Movies();
 
                         _movie.Year = m.year;
                         _movie.Title = m.title;
                         _movie.Info = new Info();
                         _movie.Info.Directors = new List<Directors>();
-                        try
+                        if (m.info.directors != null)
                         {
                             foreach (string director in m.info.directors)
                             {
@@ -86,20 +87,19 @@ namespace MvcMovie.Models
                                 _movie.Info.Directors.Add(_director);
                             }
                         }
-                        catch { }
-                        try
+                        if (m.info.release_date != null)
                         {
                             _movie.Info.ReleaseDate = m.info.release_date;
                         }
-                        catch
+                        else
                         {
                             _movie.Info.ReleaseDate = DateTime.MinValue;
                         }
-                        
+
                         _movie.Info.Rating = Convert.ToDecimal(m.info.rating);
-                        
+
                         _movie.Info.Genres = new List<Genres>();
-                        try
+                        if (m.info.genres != null)
                         {
                             foreach (string genre in m.info.genres)
                             {
@@ -108,13 +108,12 @@ namespace MvcMovie.Models
                                 _movie.Info.Genres.Add(_genre);
                             }
                         }
-                        catch { }
                         _movie.Info.ImageUrl = m.info.image_url;
                         _movie.Info.Plot = m.info.plot;
                         _movie.Info.Rank = Convert.ToString(m.info.rank);
                         _movie.Info.RunningTime = m.info.running_time_secs;
                         _movie.Info.Actors = new List<Actors>();
-                        try
+                        if (m.info.actors != null)
                         {
                             foreach (string actor in m.info.actors)
                             {
@@ -123,25 +122,25 @@ namespace MvcMovie.Models
                                 _movie.Info.Actors.Add(_actor);
                             }
                         }
-                        catch { }
-                        context.Movies.Add(_movie);
-                        context.SaveChanges();
-
-                        var movieId = (from mov in context.Movies where mov.Title.Equals(_movie.Title) select mov.Id).FirstOrDefault();
-                        var info = _movie.Info;
-                        info.MovieId = _movie.Id;
-                        context.SaveChanges();
-                        var infoId = (from mov in context.Movies where mov.Id.Equals(info.MovieId) select mov.Info.Id).FirstOrDefault();
-                        var actors = _movie.Info.Actors;
-                        var directors = _movie.Info.Directors;
-                        var genres = _movie.Info.Genres;
-                        foreach (Actors a in actors) { a.InfoId = infoId; }
-                        foreach (Directors d in directors) { d.InfoId = infoId; }
-                        foreach (Genres g in genres) { g.InfoId = infoId; }
-                        context.SaveChanges();
+                        seededMoviesList.Add(_movie);
                     }
-                }
+                    timer.Stop();
+                    log.Info(string.Format("SeedData - Converted {0} dynamic Json objects to Movies entity models in {1} seconds.", seededMoviesList.Count.ToString(), (timer.ElapsedMilliseconds / 1000).ToString()));
+                    timer.Restart();
+                    context.Movies.AddRange(seededMoviesList);
+                    timer.Stop();
+                    log.Info(string.Format("SeedData - Added {0} Movies entity models to context in {1} seconds.", seededMoviesList.Count.ToString(), (timer.ElapsedMilliseconds / 1000).ToString()));
+                    timer.Restart();
+                    context.SaveChanges();
+                    timer.Stop();
+                    log.Info(string.Format("SeedData - Completed async task to save movies to DB in {0} seconds.", (timer.ElapsedMilliseconds / 1000).ToString()));
 
+                    timer.Restart();
+                    log.Info("SeedData - Starting new thread for adding Ids to nested entities in context.");
+                    SetContextIds(context);
+                    timer.Stop();
+                    log.Info(string.Format("SeedData - exit seed data new thread should be running in the background, meanwhile {0} ms have elapsed.", timer.ElapsedMilliseconds.ToString()));
+                }
 
                 // don't seed the new movie models if exist
                 if (!context.Movies.Any())
@@ -171,7 +170,7 @@ namespace MvcMovie.Models
                         Year = "2013",
                         //Info = GetInfo4()
                     });
-                    
+
                     // save movie entities
                     context.SaveChanges();
 
@@ -530,5 +529,34 @@ namespace MvcMovie.Models
             return actors;
         }
         #endregion
+
+        public static void SetContextIds(MvcMovieContext context)
+        {
+            Task.Factory.StartNew(() => SetContextIds(context));
+        }
+        public static Task SetContextIdsAsync(MvcMovieContext context)
+        {
+            var timer = new Stopwatch();
+            timer.Start();
+            foreach (Movies m in context.Movies)
+            {
+
+                var movieId = (from mov in context.Movies where mov.Title.Equals(m.Title) select mov.Id).FirstOrDefault();
+                var info = m.Info;
+                info.MovieId = m.Id;
+                context.SaveChanges();
+                var infoId = (from mov in context.Movies where mov.Id.Equals(info.MovieId) select mov.Info.Id).FirstOrDefault();
+                var actors = m.Info.Actors;
+                var directors = m.Info.Directors;
+                var genres = m.Info.Genres;
+                foreach (Actors a in actors) { a.InfoId = infoId; }
+                foreach (Directors d in directors) { d.InfoId = infoId; }
+                foreach (Genres g in genres) { g.InfoId = infoId; }
+                context.SaveChanges();
+            }
+            timer.Stop();
+            log.Info(string.Format("SetContextIdsAsync - completed adding Ids to Movies in separate thread and saving to DB:  {0} ms have elapsed.", timer.ElapsedMilliseconds.ToString()));
+            return null;
+        }
     }
 }
