@@ -44,8 +44,22 @@ namespace MvcMovie.Utils
             _movie.Info.RunningTime = source.SelectToken("running_time_secs")?.ToString() ?? string.Empty;
             _movie.Info.Plot = source.SelectToken("info.plot")?.ToString() ?? string.Empty;
             _movie.Info.Rank = source.SelectToken("info.rank")?.ToString() ?? string.Empty;
-            _movie.Info.Rating = (Decimal?)source.SelectToken("info.rating") ?? 0;
-            
+            _movie.Info.ReleaseDate = System.Convert.ToDateTime(source.SelectToken("info.release_date")?.ToString() ?? DateTime.MinValue.ToString());
+
+            foreach (JValue value in source.FindTokens("rating"))
+            {
+                _movie.Info.Rating = System.Convert.ToDecimal(value.ToString());
+            }
+
+            foreach (JToken token in source.FindTokens("rank"))
+            {
+                foreach (JValue value in token)
+                {
+                    _movie.Info.Rank = value.ToString();
+                }
+
+            }
+
             foreach (JToken token in source.FindTokens("genres"))
             {
                 foreach (JValue value in token)

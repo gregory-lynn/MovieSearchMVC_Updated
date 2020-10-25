@@ -49,7 +49,7 @@ namespace MvcMovie.Controllers
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                movies = movies.Where(s => s.Title.Contains(searchString));
+                movies = movies.Where(s => s.Title.ToLower().Contains(searchString.ToLower()));
             }
 
             // change default sort order based on requirements

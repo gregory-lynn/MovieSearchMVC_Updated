@@ -60,7 +60,8 @@ namespace MvcMovie.Models
                 if (!context.Movies.Any())
                 {
                     var controller = new MvcMoviesController(context);
-                    var JsonMovieList = controller.GetMvcMoviesFromJson();var seededMoviesList = new List<Movies>();
+                    var JsonMovieList = controller.GetMvcMoviesFromJson();
+                    var seededMoviesList = new List<Movies>();
 
                     // use automapper to map Json response to Movie objects
                     foreach (dynamic m in JsonMovieList)
