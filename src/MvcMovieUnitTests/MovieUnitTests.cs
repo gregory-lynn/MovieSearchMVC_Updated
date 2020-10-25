@@ -1,10 +1,5 @@
-using MvcMovie.Models;
 using System.Linq;
-using System.Security.Cryptography;
 using Xunit;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using MvcMovie.Models.Entities;
 
@@ -41,14 +36,8 @@ namespace MvcMovieUnitTests
             {
                 _helper.GetAllMovies();
                 var lstMovieInfosWithoutIds = (from m in _helper.AllMovies where (m.Info.MovieId != m.Id) select m).ToList();
-                var lstActors = (from a in _helper.AllMovies select a.Info.Actors).ToList();
-                var lstDirectors = (from d in _helper.AllMovies select d.Info.Directors).ToList();
-                var lstGenres = (from g in _helper.AllMovies select g.Info.Genres).ToList();
-
-                Assert.NotNull(lstGenres);
-                Assert.NotNull(lstDirectors);
-                Assert.NotNull(lstActors);
-               // Assert.Empty(_helper.AllMovies);
+                var movieCountWithoutIds = lstMovieInfosWithoutIds.Count();
+                Assert.Equal(0, movieCountWithoutIds);
             }
             catch (Exception e)
             {

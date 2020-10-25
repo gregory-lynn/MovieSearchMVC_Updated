@@ -3,16 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MvcMovie;
-using MvcMovie.Controllers;
-using MvcMovie.Migrations;
 using MvcMovie.Models;
 using MvcMovie.Models.Entities;
 using MvcMovie.Utils;
@@ -51,39 +46,9 @@ namespace MvcMovieUnitTests
             Startup();
             GetTestMoviesFromJson();
             GetAllMovies();
-            //GetTestMoviesFromJson();
-            //DeleteAllTestMovies();
         }
         #endregion
 
-        // update properties with entity model
-        public void AddMovie(MvcMovie.Models.Entities.Movies movie)
-        {
-            //List<MvcMovie.Models.Entities.Movies> tmpList = new List<MvcMovie.Models.Entities.Movies>();
-            //tmpList.Add(movie);
-            // AddMovies(tmpList);
-            _context.Add(
-                new MvcMovie.Models.Entities.Movies
-                {
-                    // update properties with entity model
-
-                    //Title = movie.Title,
-                    //ReleaseDate = movie.ReleaseDate,
-                    //Genre = movie.Genre,
-                    //Price = movie.Price
-                });
-            _context.SaveChanges();
-        }
-        public void AddMovies(List<MvcMovie.Models.Entities.Movies> movies)
-        {
-            //_context.Movie.AddRange(movies);
-            //_context.SaveChanges();
-            foreach (MvcMovie.Models.Entities.Movies m in movies)
-            {
-                // update properties with entity model
-                AddMovie(m);
-            }
-        }
         public void DeleteAllMovies()
         {
             foreach (MvcMovie.Models.Entities.Movies m in AllMovies)
@@ -106,7 +71,6 @@ namespace MvcMovieUnitTests
         }
         public void GetAllMovies()
         {
-            //AllMovies = (from m in _context.Movies orderby m.Info.ReleaseDate select m).ToList();
             AllMovies = _context.Movies.Include(x => x.Info)
                 .Include(x => x.Info.Directors)
                 .Include(x => x.Info.Genres).Include(x => x.Info.Actors).ToList();
