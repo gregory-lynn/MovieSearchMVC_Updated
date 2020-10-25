@@ -29,7 +29,7 @@ namespace MvcMovie.Controllers
         }
 
         // GET: Movies
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(string searchString, bool isMoviesWithImagesOnly)
         {
             // Use LINQ to get list of titles.
             IQueryable<string> genreQuery = from m in _context.Movies
@@ -43,6 +43,12 @@ namespace MvcMovie.Controllers
 
             var movies = from m in _AllMovies
                          select m;
+
+            if (isMoviesWithImagesOnly)
+            {
+                movies = from m in movies where !string.IsNullOrEmpty(m.Info.ImageUrl) 
+                         select m;
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {

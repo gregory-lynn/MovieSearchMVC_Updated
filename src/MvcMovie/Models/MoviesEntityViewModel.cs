@@ -6,6 +6,7 @@ namespace MvcMovie.Models
     public class MoviesEntityViewModel
     {
         public List<Entities.Movies> Movies { get; set;}
+        public bool isMoviesWithImagesOnly { get; set; }
         public string SearchString { get; set; }
     }
 }

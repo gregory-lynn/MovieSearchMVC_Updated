@@ -12,6 +12,7 @@
 
 <form asp-controller="MvcMovies" asp-action="Index" method="get">
     <p>
+        <input asp-for="isMoviesWithImagesOnly" /> Show only movies with images <br /><br />
         Title: <input asp-for="SearchString">
         <input type="submit" value="Filter" />
     </p>
