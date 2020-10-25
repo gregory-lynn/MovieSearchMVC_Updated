@@ -23,18 +23,42 @@
             @Html.DisplayFor(model => @model.Info.ReleaseDate)
         </dd>
         <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => @model.Info.Actors)
+        </dt>
+        <dd class="col-sm-10">
+            @for (int i = 0; i < Model.Info.Actors.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => @Model.Info.Actors[i].Actor)
+                    </td>
+                </tr>
+            }
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => @model.Info.Directors)
+        </dt>
+        <dd class="col-sm-10">
+            @for (int i = 0; i < Model.Info.Directors.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => @Model.Info.Directors[i].Director)
+                    </td>
+                </tr>
+            }
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => @model.Info.Genres)
         </dt>
-    <dd class="col-sm-10">
-        @for (int i = 0; i < Model.Info.Genres.Count; i++)
-        {
-            <tr>
-                <td>
-                   @Html.DisplayFor(model => @Model.Info.Genres[i].Genre)
-                </td>
-            </tr>
-        }
-    </dd>
+        <dd class="col-sm-10">
+            @for (int i = 0; i < Model.Info.Genres.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => @Model.Info.Genres[i].Genre)
+                    </td>
+                </tr>
+            }
+        </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => @model.Info.ImageUrl)
         </dt>

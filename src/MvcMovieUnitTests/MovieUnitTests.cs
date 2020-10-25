@@ -1,4 +1,3 @@
-//sing Microsoft.VisualStudio.TestTools.UnitTesting;
 using MvcMovie.Models;
 using System.Linq;
 using System.Security.Cryptography;
@@ -67,8 +66,8 @@ namespace MvcMovieUnitTests
                 Assert.NotEmpty(_helper.AllMovies);
                 //_helper.AddMovies(_helper.TestMovies);
                 Movies JsonMovie = (from m in _helper.TestMovies select m).FirstOrDefault();
-                //Movies TestMovie = (from m in _helper.AllMovies where m.Title.Equals(JsonMovie.Title) select m).FirstOrDefault();
-                Assert.NotNull(JsonMovie);
+                Movies TestMovie = (from m in _helper.AllMovies where m.Title.Equals(JsonMovie.Title) select m).FirstOrDefault();
+                Assert.NotNull(TestMovie);
             }
             catch (Exception e)
             {
