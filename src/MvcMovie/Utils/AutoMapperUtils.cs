@@ -40,11 +40,15 @@ namespace MvcMovie.Utils
             _movie.Info.Genres = new List<Genres>();
             _movie.Title = source.SelectToken("title")?.ToString() ?? string.Empty;
             _movie.Year = source.SelectToken("year")?.ToString() ?? string.Empty;
-            _movie.Info.ImageUrl = source.SelectToken("image_url")?.ToString() ?? string.Empty;
             _movie.Info.RunningTime = source.SelectToken("running_time_secs")?.ToString() ?? string.Empty;
             _movie.Info.Plot = source.SelectToken("info.plot")?.ToString() ?? string.Empty;
             _movie.Info.Rank = source.SelectToken("info.rank")?.ToString() ?? string.Empty;
             _movie.Info.ReleaseDate = System.Convert.ToDateTime(source.SelectToken("info.release_date")?.ToString() ?? DateTime.MinValue.ToString());
+
+            foreach (JValue value in source.FindTokens("image_url"))
+            {
+                _movie.Info.ImageUrl = value?.ToString() ?? string.Empty;
+            }
 
             foreach (JValue value in source.FindTokens("rating"))
             {
