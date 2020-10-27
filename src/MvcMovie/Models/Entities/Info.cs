@@ -9,6 +9,14 @@ namespace MvcMovie.Models.Entities
 {
     public class Info : EntityBaseModel
     {
+        #region Constructor
+        public Info()
+        {
+            Directors = new List<Directors>();
+            Actors = new List<Actors>();
+            Genres = new List<Genres>();
+        }
+        #endregion
         [ForeignKey("Movie")]
         public int MovieId { get; set; }
         [JsonProperty("directors")]

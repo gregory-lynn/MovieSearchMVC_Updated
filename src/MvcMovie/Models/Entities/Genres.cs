@@ -7,13 +7,15 @@ namespace MvcMovie.Models.Entities
 {
     public class Genres : EntityBaseModel
     {
-        [JsonProperty("genre")]
-        public string Genre { get; set; }
-        [ForeignKey("Info")]
-        public int InfoId { get; set; }
+        #region Constructor
         public Genres(string genre)
         {
             Genre = genre;
         }
+        #endregion
+        [JsonProperty("genre")]
+        public string Genre { get; set; }
+        [ForeignKey("Info")]
+        public int InfoId { get; set; }
     }
 }
